@@ -66,8 +66,8 @@ double x = 0;
 void loop() {
   // Sensor read
   if (millis()-lastSensorRead > (1000/sensorReadsPerSecond)) {
-    DHT.read11(DHT_PIN);
     lastSensorRead = millis();
+    DHT.read11(DHT_PIN);
   }
 
   // Sensor values
@@ -76,6 +76,7 @@ void loop() {
 
   // Display updates
   if (millis()-updateDisplayTime > (1000/screenUpdatesPerSecond)) {
+    updateDisplayTime = millis();
     
     // Print temperature
     lcd.setCursor(0, 0);
@@ -103,21 +104,24 @@ void loop() {
       
     }
     
-    updateDisplayTime = millis();
   }
   
   // Post data updates
   if (millis()-postDataTime > 60/postDataPerMinute * 1000 ) {
+    postDataTime = millis();
+
     // Serial print the data for the plotter
     x += 0.25;
     Serial.print(x);
     Serial.println("\t"+String(temp)+"\t"+String(humid));
     
-    postDataTime = millis();
   }
   
   // Update screen blink
   if (millis()-updateScreenBlink > (1000/screenBlinksPerSecond)) {   
+    // Reset
+    updateScreenBlink = millis();
+
     // Turn the screen on or off
     if (blinkScreen && (stopScreenBlinkAfterXTimes > 0 || stopScreenBlinkAfterXTimes == -1) ) {
 
@@ -127,12 +131,11 @@ void loop() {
       if (stopScreenBlinkAfterXTimes > 0) stopScreenBlinkAfterXTimes -= 1;
 
     } else digitalWrite(BACKLIGHT_PIN, true);
-    // Reset
-    updateScreenBlink = millis();
   }
 
   // Humid actions
   if (millis()-lastHumidChange > 60/humidChangesPerMinute * 1000 ) {
+    lastHumidChange = millis();
     
     if (((int)humid) < 40) {
       if (humidifying) return;
@@ -162,8 +165,6 @@ void loop() {
       humidifying = false;
       dehumidifying = false;
     }
-
-    lastHumidChange = millis();
   }
 }
 
